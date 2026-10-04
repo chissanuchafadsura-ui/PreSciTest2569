@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ประกาศผลสอบ PRE-SCIENCE 2569</title>
+    <link rel="icon" href="https://score.phukhieo.ac.th/helper/img/pklogo.png" type="image/png">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Google Fonts: Sarabun -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #fcfcfc; /* White/very light gray background */
+            color: #333333;
+        }
+        
+        /* ไฮไลท์ฟุ้งสีขาว 50% ไม่มีขอบ บริเวณโลโก้ */
+        .logo-glow {
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.7));
+            -webkit-filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.7));
+        }
+        
+        /* กรอบคะแนนไล่สีชมพู - ขาว สบายตา */
+        .pink-gradient {
+            background: linear-gradient(135deg, #fff0f5 0%, #ffffff 100%);
+        }
+        
+        /* ซ่อนลูกศรขึ้นลงใน input type number (ถ้ามี) */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between bg-gray-50/50">
+
+    <!-- Header (พื้นหลังสีขาวยาวไปซ้ายขวา) -->
+    <header class="w-full bg-white py-8 flex flex-col items-center justify-center text-center shadow-[0_4px_20px_-10px_rgba(236,72,153,0.1)] relative z-10">
+        <img src="https://score.phukhieo.ac.th/helper/img/pklogo.png" alt="โลโก้โรงเรียนภูเขียว" class="w-24 h-24 mb-4 logo-glow object-contain">
+        <h1 class="text-xl md:text-2xl font-semibold text-pink-600 mb-1">ประกาศผลการทดสอบ PRE – SCIENCE ประจำปีการศึกษา 2569</h1>
+        <h2 class="text-sm md:text-base text-gray-500 font-medium">โรงเรียนภูเขียว กลุ่มสาระการเรียนรู้วิทยาศาสตร์ และเทคโนโลยี</h2>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center w-full px-4 py-8">
+        
+        <!-- ================= LOGIN SECTION ================= -->
+        <div id="loginSection" class="w-full max-w-md bg-white border border-pink-100 rounded-2xl shadow-[0_8px_30px_rgb(236,72,153,0.06)] p-8 transition-all duration-300">
+            <h3 class="text-lg font-semibold text-center text-gray-800 mb-6">เข้าสู่ระบบเพื่อดูคะแนน</h3>
+            
+            <!-- Error Message Alert -->
+            <div id="errorMessage" class="hidden mb-5 p-3.5 bg-red-50 border border-red-100 text-red-600 text-sm rounded-lg text-center font-medium"></div>
+
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-gray-600 mb-1.5">เลขบัตรประจำตัวประชาชน 13 หลัก</label>
+                <input type="text" id="nationalIdInput" maxlength="17" placeholder="#-####-#####-##-#" 
+                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent text-center tracking-widest text-gray-700 transition-shadow">
+            </div>
+
+            <div class="mb-8">
+                <label class="block text-sm font-medium text-gray-600 mb-1.5">รหัสนักเรียน 5 หลัก</label>
+                <input type="text" id="studentIdInput" maxlength="5" placeholder="#####" 
+                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent text-center tracking-widest text-gray-700 transition-shadow">
+            </div>
+
+            <button id="loginBtn" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-medium py-3 rounded-xl transition duration-200 shadow-md hover:shadow-lg flex items-center justify-center">
+                ตรวจสอบผลสอบ
+            </button>
+        </div>
+
+        <!-- ================= RESULT SECTION ================= -->
+        <div id="resultSection" class="hidden w-full max-w-3xl transition-all duration-300">
+            
+            <div class="flex justify-between items-center mb-4 px-2">
+                <h3 class="text-lg font-semibold text-gray-800">ผลการทดสอบของคุณ</h3>
+                <button id="logoutBtn" class="text-pink-500 hover:text-pink-700 text-sm font-medium flex items-center transition-colors bg-pink-50 px-3 py-1.5 rounded-lg hover:bg-pink-100">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    ออกจากระบบ
+                </button>
+            </div>
+
+            <!-- ข้อมูลส่วนตัว -->
+            <div class="bg-white border border-pink-100 rounded-t-2xl p-6 shadow-sm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 text-sm md:text-base">
+                    <div class="bg-gray-50 px-4 py-2.5 rounded-lg border border-gray-100">
+                        <span class="text-gray-500 text-xs block mb-0.5">ชื่อ - สกุล ผู้เข้าสอบ</span> 
+                        <span id="resName" class="font-medium text-pink-700"></span>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-2.5 rounded-lg border border-gray-100">
+                        <span class="text-gray-500 text-xs block mb-0.5">ระดับชั้น</span> 
+                        <span id="resClass" class="font-medium text-gray-800"></span>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-2.5 rounded-lg border border-gray-100 md:col-span-2">
+                        <span class="text-gray-500 text-xs block mb-0.5">เลขบัตรประจำตัวประชาชน</span> 
+                        <span id="resNationalId" class="font-medium text-gray-800 tracking-wider"></span>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-2.5 rounded-lg border border-gray-100">
+                        <span class="text-gray-500 text-xs block mb-0.5">รหัสนักเรียน</span> 
+                        <span id="resStudentId" class="font-medium text-gray-800"></span>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-2.5 rounded-lg border border-gray-100">
+                        <span class="text-gray-500 text-xs block mb-0.5">เลขที่นั่งสอบ</span> 
+                        <span id="resRollId" class="font-medium text-gray-800"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- กรอบคะแนน (ขอบมน) -->
+            <div class="pink-gradient border-x border-b border-pink-200 rounded-b-2xl p-8 shadow-lg text-center relative overflow-hidden">
+                
+                <h4 class="text-gray-600 font-medium mb-3 relative z-10">คะแนนที่ท่านสอบได้</h4>
+                <div class="flex justify-center items-baseline mb-4 relative z-10">
+                    <span id="resScore" class="text-6xl font-bold text-pink-600 tracking-tight"></span>
+                    <span class="text-3xl font-medium text-pink-300 ml-1">/60</span>
+                </div>
+                
+                <div class="relative z-10 mb-8">
+                    <span class="inline-flex items-center bg-white px-5 py-2 rounded-full border border-pink-200 shadow-sm text-pink-600 font-medium text-lg">
+                        <span class="text-sm text-gray-500 mr-2 font-normal">รางวัล:</span> <span id="resReward"></span>
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm relative z-10">
+                    <div class="bg-white/80 backdrop-blur-sm p-3 rounded-xl border border-pink-100 shadow-sm">
+                        <div class="text-gray-500 text-xs mb-1">คะแนนสูงสุด</div>
+                        <div class="font-semibold text-gray-800 text-lg" id="statMax">-</div>
+                    </div>
+                    <div class="bg-white/80 backdrop-blur-sm p-3 rounded-xl border border-pink-100 shadow-sm">
+                        <div class="text-gray-500 text-xs mb-1">คะแนนต่ำสุด</div>
+                        <div class="font-semibold text-gray-800 text-lg" id="statMin">-</div>
+                    </div>
+                    <div class="bg-white/80 backdrop-blur-sm p-3 rounded-xl border border-pink-100 shadow-sm">
+                        <div class="text-gray-500 text-xs mb-1">คะแนนเฉลี่ย</div>
+                        <div class="font-semibold text-gray-800 text-lg" id="statMean">-</div>
+                    </div>
+                    <div class="bg-white/80 backdrop-blur-sm p-3 rounded-xl border border-pink-100 shadow-sm">
+                        <div class="text-gray-500 text-xs mb-1">ค่าเบี่ยงเบน (S.D.)</div>
+                        <div class="font-semibold text-gray-800 text-lg" id="statSD">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="w-full text-center py-6 mt-auto border-t border-gray-100 bg-white z-10 text-xs md:text-sm text-gray-400">
+        <p class="mb-1">©PK SCI – PRE - SCIENCE 2026 ALLRIGHT RESERVED</p>
+        <p>
+            <a href="https://www.instagram.com/big_chissanucha_pk?igsh=MWNvZGJydTk1cGJh" target="_blank" rel="noopener noreferrer" class="text-pink-400 hover:text-pink-600 hover:underline transition-colors font-medium">
+                Dev_Chissanucha Fadsura
+            </a>
+        </p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Supabase Configuration
+            const supabaseUrl = 'https://gswafzkyhvzvxzmrgvit.supabase.co';
+            const supabaseKey = 'sb_publishable_enj-UsLFNkrxD0rIM2wjBA_wCeUr6GN'; 
+            let supabase;
+
+            try {
+                // Initialize Supabase Client
+                supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+            } catch (e) {
+                console.error("Failed to initialize Supabase:", e);
+                showError("ระบบไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณารีเฟรชหน้าเว็บ");
+            }
+
+            // Bind Elements
+            const nationalIdInput = document.getElementById('nationalIdInput');
+            const studentIdInput = document.getElementById('studentIdInput');
+            const loginBtn = document.getElementById('loginBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const errorMsg = document.getElementById('errorMessage');
+
+            // Attach Event Listeners (This avoids the "login is not defined" error)
+            loginBtn.addEventListener('click', handleLogin);
+            logoutBtn.addEventListener('click', handleLogout);
+
+            // Ensure student ID only accepts numbers
+            studentIdInput.addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+
+            // Auto-format National ID while typing (X-XXXX-XXXXX-XX-X)
+            nationalIdInput.addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                let formattedValue = '';
+                
+                if (value.length > 0) { formattedValue += value.substring(0, 1); }
+                if (value.length > 1) { formattedValue += '-' + value.substring(1, 5); }
+                if (value.length > 5) { formattedValue += '-' + value.substring(5, 10); }
+                if (value.length > 10) { formattedValue += '-' + value.substring(10, 12); }
+                if (value.length > 12) { formattedValue += '-' + value.substring(12, 13); }
+                
+                e.target.value = formattedValue;
+            });
+
+            // Fetch and calculate global statistics
+            async function fetchAndCalculateStats() {
+                try {
+                    // Fetch only the Score column to optimize payload
+                    const { data, error } = await supabase.from('data').select('Score');
+                    
+                    if (error) throw error;
+                    if (!data || data.length === 0) return;
+
+                    // Parse scores and filter out invalid/empty ones
+                    const scores = data.map(row => Number(row.Score)).filter(val => !isNaN(val));
+                    if (scores.length === 0) return;
+
+                    const max = Math.max(...scores);
+                    const min = Math.min(...scores);
+                    const sum = scores.reduce((acc, val) => acc + val, 0);
+                    const mean = sum / scores.length;
+                    
+                    // Calculate Population Standard Deviation
+                    const squareDiffs = scores.map(value => {
+                        const diff = value - mean;
+                        return diff * diff;
+                    });
+                    const avgSquareDiff = squareDiffs.reduce((acc, val) => acc + val, 0) / scores.length;
+                    const sd = Math.sqrt(avgSquareDiff);
+
+                    // Update UI
+                    document.getElementById('statMax').innerText = max.toFixed(2);
+                    document.getElementById('statMin').innerText = min.toFixed(2);
+                    document.getElementById('statMean').innerText = mean.toFixed(2);
+                    document.getElementById('statSD').innerText = sd.toFixed(2);
+
+                } catch (error) {
+                    console.error("Stats calculation error:", error.message);
+                }
+            }
+
+            // Handle Login Submission
+            async function handleLogin() {
+                const rawNationalId = nationalIdInput.value;
+                const studentId = studentIdInput.value;
+
+                // Strip hyphens for DB query (because DB stores it as numeric e.g. 1100102345001)
+                const cleanNationalId = rawNationalId.replace(/-/g, '');
+
+                if (cleanNationalId.length !== 13 || studentId.length !== 5) {
+                    showError("กรุณากรอกเลขบัตรประชาชน 13 หลัก และรหัสนักเรียน 5 หลักให้ครบถ้วน");
+                    return;
+                }
+
+                errorMsg.classList.add('hidden');
+                const originalBtnText = loginBtn.innerText;
+                loginBtn.innerText = "กำลังตรวจสอบข้อมูล...";
+                loginBtn.disabled = true;
+                loginBtn.classList.add('opacity-75', 'cursor-not-allowed');
+
+                try {
+                    if (!supabase) throw new Error("Supabase client is not initialized.");
+
+                    // Fetch user matching both Student ID and National ID
+                    const { data, error } = await supabase
+                        .from('data')
+                        .select('*')
+                        .eq('ID Student', studentId)
+                        .eq('ID National', cleanNationalId)
+                        .single(); // Ensure we only get one matching record
+
+                    if (error) {
+                        // Check specifically for PGRST116 (0 rows) which means not found
+                        if (error.code === 'PGRST116') {
+                            throw new Error("ไม่พบข้อมูล หรือรหัสไม่ตรงกัน");
+                        }
+                        // For RLS blocks or API issues
+                        throw new Error("ปัญหาฐานข้อมูล: " + error.message);
+                    }
+
+                    if (data) {
+                        // Fetch global stats asynchronously while showing result
+                        fetchAndCalculateStats(); 
+                        displayResult(data);
+                    } else {
+                        throw new Error("ไม่พบข้อมูลผู้ใช้งานนี้ในระบบ");
+                    }
+
+                } catch (err) {
+                    showError(err.message);
+                } finally {
+                    loginBtn.innerText = "ตรวจสอบผลสอบ";
+                    loginBtn.disabled = false;
+                    loginBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                }
+            }
+
+            // Display errors to user
+            function showError(message) {
+                errorMsg.innerText = message;
+                errorMsg.classList.remove('hidden');
+            }
+
+            // Populate and show the Result Dashboard
+            function displayResult(data) {
+                document.getElementById('resName').innerText = data['Name'] || '-';
+                document.getElementById('resClass').innerText = data['Class'] || '-';
+                document.getElementById('resStudentId').innerText = data['ID Student'] || '-';
+                document.getElementById('resRollId').innerText = data['ID Roll'] || '-';
+                
+                // Format National ID back to with hyphens for display from numeric DB data
+                const dbNid = String(data['ID National']);
+                if (dbNid.length === 13) {
+                    const formattedNid = dbNid.replace(/(\d{1})(\d{4})(\d{5})(\d{2})(\d{1})/, "$1-$2-$3-$4-$5");
+                    document.getElementById('resNationalId').innerText = formattedNid;
+                } else {
+                    document.getElementById('resNationalId').innerText = dbNid || '-';
+                }
+                
+                // Scores
+                document.getElementById('resScore').innerText = data['Score'] !== null ? data['Score'] : '-';
+                document.getElementById('resReward').innerText = data['Reward'] || '-';
+
+                // Toggle Visibility
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('resultSection').classList.remove('hidden');
+            }
+
+            // Handle Logout
+            function handleLogout() {
+                nationalIdInput.value = '';
+                studentIdInput.value = '';
+                errorMsg.classList.add('hidden');
+                
+                document.getElementById('resultSection').classList.add('hidden');
+                document.getElementById('loginSection').classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
